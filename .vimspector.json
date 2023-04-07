@@ -1,0 +1,35 @@
+{
+  "configurations": {
+    "blinker": {
+      "adapter": "vscode-cpptools",
+      "configuration": {
+        "name": "Blinker - OpenOCD",
+        "type": "cppdbg",
+        "targetArchitecture": "arm",
+        "request": "launch",
+        "program": "${workspaceRoot}/target/thumbv6m-none-eabi/debug/rp2040-project-template",
+        "cwd": "${workspaceRoot}",
+        "externalConsole": true,
+        "serverLaunchTimeout": 20000,
+        "MIDebuggerPath": "/usr/bin/arm-none-eabi-gdb",
+        "miDebuggerArgs": "${workspaceRoot}/target/thumbv6m-none-eabi/debug/rp2040-project-template",
+        //"debugServerPath": "openocd",
+        //"debugServerArgs": "-f interface/cmsis-dap.cfg -f target/rp2040.cfg -s ~k/src/openocd/tcl",
+        "filterStdout": true,
+        "filterStderr": true,
+        "stopAtEntry": true,
+        "stopAtConnect": true,
+        "setupCommands": [
+          { "text": "target remote localhost:3333", "description": "Connect to target", "ignoreFailures": false },
+          { "text": "monitor reset halt", "description": "Reset and halt target", "ignoreFailures": false },
+          { "text": "load", "description": "Load executable", "ignoreFailures": false },
+          { "text": "break main", "description": "Set break point at main function", "ignoreFailures": false }
+        ],
+        "customLaunchSetupCommands": [
+        ],
+        "launchCompleteCommand": "None"
+      }
+    }
+  }
+}
+
