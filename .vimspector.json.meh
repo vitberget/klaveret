@@ -1,0 +1,75 @@
+{
+  "adapters": {
+    "cpptools-remote": {
+      "command": [
+        "${gadgetDir}/vscode-cpptools/debugAdapters/bin/OpenDebugAD7"
+      ],
+      "name": "cppdbg",
+      "configuration": {
+        "type": "cppdbg" },
+      "launch": {
+        "remote": {
+          "host": "${host}",
+          "account": "${account}",
+
+          "runCommand": [
+            "gdbserver",
+            "--once",
+            "--no-startup-with-shell",
+            "--disable-randomisation",
+            "0.0.0.0:${port}",
+            "%CMD%"
+          ]
+        },
+        "delay": "1000m" 
+      },
+      "attach": {
+        "remote": {
+          "host": "${host}",
+          "account": "${account}",
+          // or, alterna
+
+          "pidCommand": [
+             "pgrep", "executable"
+          ],
+          "attachCommand": [
+            "gdbserver", "--once",
+            "--attach",
+            "0.0.0.0:${port}",
+            "%PID%"
+          ]
+        },
+        "delay": "1000m"
+      }
+    }
+  },
+  "configurations": {
+    "remote launch": {
+      "adapter": "cpptools-remote",
+      "remote-cmdLine": [ "/path/to/the/remote/executable", "args..." ],
+      "remote-request": "launch",
+      "configuration": {
+        "request": "launch",
+
+        "program": "/path/to/the/local/executable",
+        "cwd": "${workspaceRoot}",
+        "MIMode": "gdb",
+        "miDebuggerServerAddress": "${host}:${port}",
+        "sourceFileMap#json": "{\"${RemoteRoot}\": \"${workspaceRoot}\"}"
+      }
+    },
+    "remote attach": {
+      "adapter": "cpptools-remote",
+      "remote-request": "attach",
+      "configuration": {
+        "request": "launch",
+
+        "program": "/path/to/the/local/executable",
+        "cwd": "${workspaceRoot}",
+        "MIMode": "gdb",
+        "miDebuggerServerAddress": "${host}:${port}",
+        "sourceFileMap#json": "{\"${RemoteRoot}\": \"${workspaceRoot}\"}"
+      }
+    }
+  }
+}

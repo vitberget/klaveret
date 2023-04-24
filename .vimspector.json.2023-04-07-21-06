@@ -1,0 +1,28 @@
+{
+    "configurations": {
+        "Debug rp2040-project-template": {
+            "adapter": "vscode-cpptools",
+            "configuration": {
+                "request": "launch",
+                "type": "cortex-debug",
+                "cwd": "${workspaceRoot}",
+                "executable": "${workspaceFolder}/target/thumbv6m-none-eabi/debug/rp2040-project-template",
+                "program": "${workspaceFolder}/target/thumbv6m-none-eabi/debug/rp2040-project-template",
+                "preLaunchTask": "Build binary",
+                "servertype": "external",
+                "gdbPath": "arm-none-eabi-gdb",
+                "gdbTarget": "localhost:3333",
+                "runToMain": true,
+                "preLaunchCommands": [
+                    "monitor init",
+                    "monitor reset init",
+                    "monitor halt"
+                ],
+                "postRestartCommands": [
+                    "break main",
+                    "continue"
+                ]
+            }
+        }
+    }
+}
