@@ -13,8 +13,6 @@
         "serverLaunchTimeout": 20000,
         "MIDebuggerPath": "/usr/bin/arm-none-eabi-gdb",
         "miDebuggerArgs": "${workspaceRoot}/target/thumbv6m-none-eabi/debug/rp2040-project-template",
-        //"debugServerPath": "openocd",
-        //"debugServerArgs": "-f interface/cmsis-dap.cfg -f target/rp2040.cfg -s ~k/src/openocd/tcl",
         "filterStdout": true,
         "filterStderr": true,
         "stopAtEntry": true,
