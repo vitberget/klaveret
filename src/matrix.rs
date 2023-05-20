@@ -1,6 +1,6 @@
-use embedded_hal::digital::v2::{InputPin, OutputPin};
+
 use crate::keycodes::*;
-use rp_pico as bsp;
+
 
 pub(crate) const KEY_MATRIX_SWEDISH: [[u8; 2]; 2] =
     [

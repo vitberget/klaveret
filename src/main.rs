@@ -60,18 +60,7 @@ fn entry() -> ! {
         &mut pac.RESETS,
     );
 
-    // let test = isHigh(pins, 0);
-
-    let mut led_pin = pins.led.into_push_pull_output();
-
-
-    // let mut i_pin = pins.gpio14.into_pull_down_input();
-    // let mut o_pin = pins.gpio17.into_push_pull_output();
-
-    // o_pin.set_high().unwrap();
-
-    // let (input_pins, output_pins) = get_pins(pins);
-
+    let _led_pin = pins.led.into_push_pull_output();
 
     let usb_bus = UsbBusAllocator::new(bsp::hal::usb::UsbBus::new(
         pac.USBCTRL_REGS,
@@ -88,17 +77,6 @@ fn entry() -> ! {
         .serial_number("0")
         .device_class(0)
         .build();
-
-    let mut prev_keys: [u8; 6] = [0; 6];
-
-    // let i_0 = pins.gpio14.into_pull_down_input();
-    // let i_1 = pins.gpio13.into_pull_down_input();
-    //
-    // let o_0 = pins.gpio17.into_push_pull_output();
-    // let o_1 = pins.gpio18.into_push_pull_output();
-
-    // let mut gpio12: DynPin = pins.gpio12.into();
-    // gpio12.into_pull_down_input();
 
     let mut p0: DynPin = pins.gpio14.into();
     let mut p1: DynPin = pins.gpio13.into();
@@ -158,5 +136,3 @@ fn send_key(usb_hid: &HIDClass<bsp::hal::usb::UsbBus>, keys: [u8;6]) {
 
     usb_hid.push_input(&keyboard_report).unwrap();
 }
-
-
