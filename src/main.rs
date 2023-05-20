@@ -1,10 +1,12 @@
 #![no_std]
 #![no_main]
 
+mod matrix;
+mod keycodes;
+
 use bsp::entry;
 use defmt::*;
 use defmt_rtt as _;
-use embedded_hal::digital::v2::{InputPin, OutputPin};
 use panic_probe as _;
 
 use rp_pico as bsp;
@@ -15,7 +17,6 @@ use usbd_hid::descriptor::KeyboardReport;
 use usbd_hid::hid_class::HIDClass;
 
 const USB_HOST_POLL_MS: u8 = 10;
-const KEY_I: u8 = 0x0c;
 
 use bsp::hal::{
     clocks::{init_clocks_and_plls, Clock},
@@ -23,6 +24,10 @@ use bsp::hal::{
     sio::Sio,
     watchdog::Watchdog,
 };
+use cortex_m::delay::Delay;
+use embedded_hal::digital::v2::{InputPin, OutputPin};
+use rp_pico::hal::gpio::DynPin;
+use crate::matrix::{get_key_code};
 
 #[entry]
 fn entry() -> ! {
@@ -55,11 +60,18 @@ fn entry() -> ! {
         &mut pac.RESETS,
     );
 
-    let mut led_pin = pins.led.into_push_pull_output();
-    let mut i_pin = pins.gpio14.into_pull_down_input();
-    let mut o_pin = pins.gpio17.into_push_pull_output();
+    // let test = isHigh(pins, 0);
 
-    o_pin.set_high().unwrap();
+    let mut led_pin = pins.led.into_push_pull_output();
+
+
+    // let mut i_pin = pins.gpio14.into_pull_down_input();
+    // let mut o_pin = pins.gpio17.into_push_pull_output();
+
+    // o_pin.set_high().unwrap();
+
+    // let (input_pins, output_pins) = get_pins(pins);
+
 
     let usb_bus = UsbBusAllocator::new(bsp::hal::usb::UsbBus::new(
         pac.USBCTRL_REGS,
@@ -77,40 +89,74 @@ fn entry() -> ! {
         .device_class(0)
         .build();
 
-    let mut counter: u32 = 0;
+    let mut prev_keys: [u8; 6] = [0; 6];
 
-    let mut prev_i = false;
+    // let i_0 = pins.gpio14.into_pull_down_input();
+    // let i_1 = pins.gpio13.into_pull_down_input();
+    //
+    // let o_0 = pins.gpio17.into_push_pull_output();
+    // let o_1 = pins.gpio18.into_push_pull_output();
+
+    // let mut gpio12: DynPin = pins.gpio12.into();
+    // gpio12.into_pull_down_input();
+
+    let mut p0: DynPin = pins.gpio14.into();
+    let mut p1: DynPin = pins.gpio13.into();
+
+    p0.into_pull_down_input();
+    p1.into_pull_down_input();
+    let input_pins = [p0, p1];
+    let mut p2: DynPin = pins.gpio17.into();
+    let mut p3: DynPin = pins.gpio18.into();
+
+    p2.into_push_pull_output();
+    p3.into_push_pull_output();
+    let mut output_pins = [p2, p3];
+
+    let mut prev_keys: [u8; 6] = [0; 6];
 
     loop {
         usb_dev.poll(&mut [&mut usb_hid]);
-        let now_i = i_pin.is_high().unwrap();
+        let now_keys = get_keys(&mut output_pins, &input_pins, &mut delay);
 
-        if now_i != prev_i {
-            prev_i = now_i;
-            if now_i {
-                led_pin.set_high().unwrap();
-                send_key(&usb_hid, KEY_I);
-            } else {
-                led_pin.set_low().unwrap();
-                send_key(&usb_hid, 0);
-            }
+        if now_keys != prev_keys {
+            prev_keys = now_keys;
+            send_key(&usb_hid, now_keys);
             delay.delay_ms(USB_HOST_POLL_MS.into());
         }
     }
 }
 
-fn send_key(usb_hid: &HIDClass<bsp::hal::usb::UsbBus>, key_code: u8) {
-    let mut keyboard_report = KeyboardReport {
+fn get_keys(outputs: &mut [DynPin; 2], inputs: &[DynPin; 2], delay: &mut Delay) -> [u8; 6] {
+    let mut result = [0; 6];
+    let mut r_idx = 0;
+
+    for output in 0..outputs.len() {
+        outputs[output].set_high().unwrap();
+        delay.delay_us(100);
+        for input in 0..inputs.len() {
+            if inputs[input].is_high().unwrap_or(false) {
+                result[r_idx] = get_key_code(output, input);
+                r_idx += 1
+            }
+            if r_idx > 5 { break; }
+        }
+        outputs[output].set_low().unwrap();
+        if r_idx > 5 { break; }
+    }
+
+    return result;
+}
+
+fn send_key(usb_hid: &HIDClass<bsp::hal::usb::UsbBus>, keys: [u8;6]) {
+    let keyboard_report = KeyboardReport {
         modifier: 0,
         reserved: 0,
         leds: 0,
-        keycodes: [0; 6],
+        keycodes: keys,
     };
 
-    keyboard_report.keycodes[0] = key_code;
     usb_hid.push_input(&keyboard_report).unwrap();
-
-
 }
 
-// End of file
+

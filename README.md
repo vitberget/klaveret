@@ -13,3 +13,4 @@ A Rust project for learning embedded Rust for myself, and writing a keyboard fir
 * <https://github.com/rp-rs/rp2040-project-template>
 * <https://blog.scottlogic.com/2022/12/08/building-a-rusty-vim-clutch.html>
 * <https://doc.rust-lang.org/book/>
+* <http://blog.timhutt.co.uk/std-embedded-rust/index.html>
