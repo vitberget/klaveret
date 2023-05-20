@@ -7,15 +7,9 @@ use defmt_rtt as _;
 use embedded_hal::digital::v2::{InputPin, OutputPin};
 use panic_probe as _;
 
-// Provide an alias for our BSP so we can switch targets quickly.
-// Uncomment the BSP you included in Cargo.toml, the rest of the code does not need to change.
 use rp_pico as bsp;
-// use sparkfun_pro_micro_rp2040 as bsp;
 
-// USB Device support
 use usb_device::{class_prelude::*, prelude::*};
-
-// USB Human Interface Device (HID) Class support
 use usbd_hid::descriptor::generator_prelude::*;
 use usbd_hid::descriptor::KeyboardReport;
 use usbd_hid::hid_class::HIDClass;
@@ -61,13 +55,7 @@ fn entry() -> ! {
         &mut pac.RESETS,
     );
 
-    // This is the correct pin on the Raspberry Pico board. On other boards, even if they have an
-    // on-board LED, it might need to be changed.
-    // Notably, on the Pico W, the LED is not connected to any of the RP2040 GPIOs but to the cyw43 module instead. If you have
-    // a Pico W and want to toggle a LED with a simple GPIO output pin, you can connect an external
-    // LED to one of the GPIO pins, and reference that pin here.
     let mut led_pin = pins.led.into_push_pull_output();
-
     let mut i_pin = pins.gpio14.into_pull_down_input();
     let mut o_pin = pins.gpio17.into_push_pull_output();
 
@@ -102,12 +90,11 @@ fn entry() -> ! {
             if now_i {
                 led_pin.set_high().unwrap();
                 send_key(&usb_hid, KEY_I);
-                delay.delay_ms(USB_HOST_POLL_MS.into());
             } else {
                 led_pin.set_low().unwrap();
                 send_key(&usb_hid, 0);
-                delay.delay_ms(USB_HOST_POLL_MS.into());
             }
+            delay.delay_ms(USB_HOST_POLL_MS.into());
         }
     }
 }
