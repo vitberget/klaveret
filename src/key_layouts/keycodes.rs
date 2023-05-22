@@ -65,7 +65,7 @@ pub(crate) const KEY_DOT: u8 = 0x37; // Keyboard . and >
 pub(crate) const KEY_SLASH: u8 = 0x38; // Keyboard / and ?
 pub(crate) const KEY_CAPSLOCK: u8 = 0x39; // Keyboard Caps Lock
 
-pub(crate) const KEY_SYSRQ: u8 = 0x46; // Keyboard Print Screen
+pub(crate) const KEY_SYS_RQ: u8 = 0x46; // Keyboard Print Screen
 pub(crate) const KEY_SCROLL_LOCK: u8 = 0x47; // Keyboard Scroll Lock
 pub(crate) const KEY_PAUSE: u8 = 0x48; // Keyboard Pause
 pub(crate) const KEY_INSERT: u8 = 0x49; // Keyboard Insert
@@ -79,7 +79,7 @@ pub(crate) const KEY_LEFT: u8 = 0x50; // Keyboard Left Arrow
 pub(crate) const KEY_DOWN: u8 = 0x51; // Keyboard Down Arrow
 pub(crate) const KEY_UP: u8 = 0x52; // Keyboard Up Arrow
 
-pub(crate) const KEY_NUMLOCK: u8 = 0x53; // Keyboard Num Lock and Clear
+pub(crate) const KEY_NUM_LOCK: u8 = 0x53; // Keyboard Num Lock and Clear
 
 pub(crate) const KEY_F1: u8 = 0x3a; // Keyboard F1
 pub(crate) const KEY_F2: u8 = 0x3b; // Keyboard F2

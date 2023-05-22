@@ -1,8 +1,8 @@
 #![no_std]
 #![no_main]
 
-mod matrix;
-mod keycodes;
+mod keys;
+mod key_layouts;
 
 use bsp::entry;
 use defmt::*;
@@ -19,19 +19,19 @@ use usbd_hid::hid_class::HIDClass;
 const USB_HOST_POLL_MS: u8 = 10;
 
 use bsp::hal::{
-    clocks::{init_clocks_and_plls, Clock},
+    clocks::{Clock, init_clocks_and_plls},
     pac,
     sio::Sio,
     watchdog::Watchdog,
 };
 use cortex_m::delay::Delay;
-use embedded_hal::digital::v2::{InputPin, OutputPin};
 use rp_pico::hal::gpio::DynPin;
-use crate::matrix::{get_key_code};
+use crate::keys::{get_keys, send_key};
 
 #[entry]
 fn entry() -> ! {
     info!("Program start");
+
     let mut pac = pac::Peripherals::take().unwrap();
     let core = pac::CorePeripherals::take().unwrap();
     let mut watchdog = Watchdog::new(pac.WATCHDOG);
@@ -51,7 +51,7 @@ fn entry() -> ! {
         .ok()
         .unwrap();
 
-    let mut delay = cortex_m::delay::Delay::new(core.SYST, clocks.system_clock.freq().to_Hz());
+    let mut delay = Delay::new(core.SYST, clocks.system_clock.freq().to_Hz());
 
     let pins = bsp::Pins::new(
         pac.IO_BANK0,
@@ -94,6 +94,7 @@ fn entry() -> ! {
     let mut prev_keys: [u8; 6] = [0; 6];
 
     loop {
+        // TODO use ticks instead?
         usb_dev.poll(&mut [&mut usb_hid]);
         let now_keys = get_keys(&mut output_pins, &input_pins, &mut delay);
 
@@ -103,36 +104,4 @@ fn entry() -> ! {
             delay.delay_ms(USB_HOST_POLL_MS.into());
         }
     }
-}
-
-fn get_keys(outputs: &mut [DynPin; 2], inputs: &[DynPin; 2], delay: &mut Delay) -> [u8; 6] {
-    let mut result = [0; 6];
-    let mut r_idx = 0;
-
-    for output in 0..outputs.len() {
-        outputs[output].set_high().unwrap();
-        delay.delay_us(100);
-        for input in 0..inputs.len() {
-            if inputs[input].is_high().unwrap_or(false) {
-                result[r_idx] = get_key_code(output, input);
-                r_idx += 1
-            }
-            if r_idx > 5 { break; }
-        }
-        outputs[output].set_low().unwrap();
-        if r_idx > 5 { break; }
-    }
-
-    return result;
-}
-
-fn send_key(usb_hid: &HIDClass<bsp::hal::usb::UsbBus>, keys: [u8;6]) {
-    let keyboard_report = KeyboardReport {
-        modifier: 0,
-        reserved: 0,
-        leds: 0,
-        keycodes: keys,
-    };
-
-    usb_hid.push_input(&keyboard_report).unwrap();
 }
