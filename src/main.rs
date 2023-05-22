@@ -11,6 +11,10 @@ use panic_probe as _;
 
 use rp_pico as bsp;
 
+
+use core::fmt::Write;
+use fugit::RateExtU32;
+
 use usb_device::{class_prelude::*, prelude::*};
 use usbd_hid::descriptor::generator_prelude::*;
 use usbd_hid::descriptor::KeyboardReport;
@@ -25,7 +29,11 @@ use bsp::hal::{
     watchdog::Watchdog,
 };
 use cortex_m::delay::Delay;
+use embedded_hal::prelude::_embedded_hal_serial_Write;
+use rp_pico::hal;
 use rp_pico::hal::gpio::DynPin;
+use rp_pico::hal::uart::{DataBits, StopBits, UartConfig, UartPeripheral};
+
 use crate::keys::{get_keys, send_key};
 
 #[entry]
@@ -91,6 +99,24 @@ fn entry() -> ! {
     p3.into_push_pull_output();
     let mut output_pins = [p2, p3];
 
+    let uart_pins = (
+        // UART TX (characters sent from RP2040) on pin 1 (GPIO0)
+        pins.gpio0.into_mode::<hal::gpio::FunctionUart>(),
+        // UART RX (characters received by RP2040) on pin 2 (GPIO1)
+        pins.gpio1.into_mode::<hal::gpio::FunctionUart>(),
+    );
+
+    let hz = RateExtU32::Hz(9600);
+
+    let mut uart = hal::uart::UartPeripheral::new(pac.UART0, uart_pins, &mut pac.RESETS)
+        .enable(
+            UartConfig::new(hz, DataBits::Eight, None, StopBits::One),
+            clocks.peripheral_clock.freq(),
+        )
+        .unwrap();
+
+    uart.write_full_blocking(b"UART redo\r\n");
+
     let mut prev_keys: [u8; 6] = [0; 6];
 
     loop {
@@ -99,6 +125,8 @@ fn entry() -> ! {
         let now_keys = get_keys(&mut output_pins, &input_pins, &mut delay);
 
         if now_keys != prev_keys {
+            let _ = uart.write_str("Key stuff\r\n");
+
             prev_keys = now_keys;
             send_key(&usb_hid, now_keys);
             delay.delay_ms(USB_HOST_POLL_MS.into());

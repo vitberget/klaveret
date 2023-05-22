@@ -11,6 +11,8 @@ pub(crate) fn get_keys(outputs: &mut [DynPin; 2],
             inputs: &[DynPin; 2],
             delay: &mut Delay) -> [u8; 6] {
 
+    // TODO debounce
+
     let mut result = [0; 6];
     let mut r_idx = 0;
 

@@ -14,3 +14,12 @@ A Rust project for learning embedded Rust for myself, and writing a keyboard fir
 * <https://blog.scottlogic.com/2022/12/08/building-a-rusty-vim-clutch.html>
 * <https://doc.rust-lang.org/book/>
 * <http://blog.timhutt.co.uk/std-embedded-rust/index.html>
+* <https://github.com/rp-rs/rp-hal/blob/main/rp2040-hal/examples/uart.rs>
+
+## Serial monitoring
+
+```sh
+screen /dev/ttyACM0 9600
+```
+
+exit: `Ctrl-A \`

@@ -24,6 +24,8 @@ rp-pico = "0.7"
 
 usb-device= "0.2.9"
 usbd-hid = "0.6.1"
+usbd-serial = "0.1.1"
+fugit = "0.3.6"
 
 # cargo build/run
 [profile.dev]
