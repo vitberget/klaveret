@@ -18,8 +18,16 @@ A Rust project for learning embedded Rust for myself, and writing a keyboard fir
 
 ## Serial monitoring
 
+### screen
+
 ```sh
 screen /dev/ttyACM0 9600
 ```
 
 exit: `Ctrl-A \`
+
+### cat
+
+```shell
+cat /dev/ttyACM0
+```
