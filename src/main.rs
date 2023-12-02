@@ -1,40 +1,34 @@
 #![no_std]
 #![no_main]
 
+use bsp::entry;
+use bsp::hal::clocks::{Clock, init_clocks_and_plls};
+use bsp::hal::pac;
+use bsp::hal::sio::Sio;
+use bsp::hal::watchdog::Watchdog;
+use core::fmt::Write;
+use cortex_m::delay::Delay;
+use defmt::*;
+use defmt_rtt as _;
+use embedded_hal::prelude::_embedded_hal_serial_Write;
+use fugit::RateExtU32;
+use panic_probe as _;
+use rp_pico as bsp;
+use rp_pico::hal::gpio::DynPin;
+use rp_pico::hal::uart::{DataBits, StopBits, UartConfig, UartPeripheral};
+use rp_pico::hal;
+use usb_device::prelude::*;
+use usb_device::class_prelude::*;
+use usbd_hid::descriptor::KeyboardReport;
+use usbd_hid::descriptor::generator_prelude::*;
+use usbd_hid::hid_class::HIDClass;
+
+use crate::keys::{get_keys, send_key};
+
 mod keys;
 mod key_layouts;
 
-use bsp::entry;
-use defmt::*;
-use defmt_rtt as _;
-use panic_probe as _;
-
-use rp_pico as bsp;
-
-
-use core::fmt::Write;
-use fugit::RateExtU32;
-
-use usb_device::{class_prelude::*, prelude::*};
-use usbd_hid::descriptor::generator_prelude::*;
-use usbd_hid::descriptor::KeyboardReport;
-use usbd_hid::hid_class::HIDClass;
-
 const USB_HOST_POLL_MS: u8 = 10;
-
-use bsp::hal::{
-    clocks::{Clock, init_clocks_and_plls},
-    pac,
-    sio::Sio,
-    watchdog::Watchdog,
-};
-use cortex_m::delay::Delay;
-use embedded_hal::prelude::_embedded_hal_serial_Write;
-use rp_pico::hal;
-use rp_pico::hal::gpio::DynPin;
-use rp_pico::hal::uart::{DataBits, StopBits, UartConfig, UartPeripheral};
-
-use crate::keys::{get_keys, send_key};
 
 #[entry]
 fn entry() -> ! {
@@ -78,7 +72,7 @@ fn entry() -> ! {
         &mut pac.RESETS,
     ));
 
-    let mut usb_hid = HIDClass::new(&usb_bus, KeyboardReport::desc(), USB_HOST_POLL_MS);
+    let mut usb_keyboard_hid = HIDClass::new(&usb_bus, KeyboardReport::desc(), USB_HOST_POLL_MS);
     let mut usb_dev = UsbDeviceBuilder::new(&usb_bus, UsbVidPid(0x16c0, 0x27da))
         .manufacturer("Kenneth Hedman")
         .product("Klaveret")
@@ -121,14 +115,14 @@ fn entry() -> ! {
 
     loop {
         // TODO use ticks instead?
-        usb_dev.poll(&mut [&mut usb_hid]);
+        usb_dev.poll(&mut [&mut usb_keyboard_hid]);
         let now_keys = get_keys(&mut output_pins, &input_pins, &mut delay);
 
         if now_keys != prev_keys {
             let _ = uart.write_str("Key stuff\r\n");
 
             prev_keys = now_keys;
-            send_key(&usb_hid, now_keys);
+            send_key(&usb_keyboard_hid, now_keys);
             delay.delay_ms(USB_HOST_POLL_MS.into());
         }
     }
